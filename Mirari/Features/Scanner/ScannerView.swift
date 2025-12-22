@@ -3,8 +3,12 @@ import AVFoundation
 
 struct ScannerView: View {
     @State private var cameraManager = CameraManager()
+    @State private var geminiService = GeminiService()
     @State private var isCapturing = false
     @State private var showingResult = false
+    @State private var detectionResult: DetectionResult?
+    @State private var detectionError: Error?
+    @State private var captureTask: Task<Void, Never>?
 
     var body: some View {
         NavigationStack {
@@ -23,11 +27,24 @@ struct ScannerView: View {
 
                     Spacer()
 
-                    // Capture button
-                    CaptureButton(isCapturing: isCapturing) {
-                        Task {
-                            await captureAndIdentify()
+                    // Capture button and cancel
+                    VStack(spacing: 16) {
+                        CaptureButton(isCapturing: isCapturing) {
+                            captureTask = Task {
+                                await captureAndIdentify()
+                            }
                         }
+
+                        Button("Cancel") {
+                            cancelCapture()
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .opacity(isCapturing ? 1 : 0)
                     }
                     .padding(.bottom, 40)
                 }
@@ -48,17 +65,19 @@ struct ScannerView: View {
                 await cameraManager.checkAuthorization()
                 if cameraManager.isAuthorized {
                     cameraManager.configure()
+                    cameraManager.start()
                 }
-            }
-            .onAppear {
-                cameraManager.start()
             }
             .onDisappear {
                 cameraManager.stop()
             }
             .sheet(isPresented: $showingResult) {
                 if let image = cameraManager.lastCapturedImage {
-                    DetectedCardView(capturedImage: image)
+                    DetectedCardView(
+                        capturedImage: image,
+                        detectionResult: detectionResult,
+                        detectionError: detectionError
+                    )
                 }
             }
         }
@@ -66,10 +85,39 @@ struct ScannerView: View {
 
     private func captureAndIdentify() async {
         isCapturing = true
-        defer { isCapturing = false }
+        defer {
+            isCapturing = false
+            captureTask = nil
+        }
 
-        guard let _ = await cameraManager.capturePhoto() else { return }
+        // Reset previous results
+        detectionResult = nil
+        detectionError = nil
+
+        // Capture photo
+        guard let image = await cameraManager.capturePhoto() else { return }
+
+        // Check for cancellation before API call
+        guard !Task.isCancelled else { return }
+
+        // Identify card with Gemini
+        do {
+            detectionResult = try await geminiService.identifyCard(image: image)
+        } catch {
+            // Don't show error if cancelled
+            guard !Task.isCancelled else { return }
+            detectionError = error
+        }
+
+        // Show results (even if detection failed, we show the error)
+        guard !Task.isCancelled else { return }
         showingResult = true
+    }
+
+    private func cancelCapture() {
+        captureTask?.cancel()
+        captureTask = nil
+        isCapturing = false
     }
 }
 
