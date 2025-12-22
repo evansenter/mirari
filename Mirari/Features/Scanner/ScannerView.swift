@@ -95,7 +95,12 @@ struct ScannerView: View {
         detectionError = nil
 
         // Capture photo
-        guard let image = await cameraManager.capturePhoto() else { return }
+        guard let image = await cameraManager.capturePhoto() else {
+            print("[ScannerView] Photo capture failed - no image returned")
+            detectionError = CameraManager.CameraError.captureError("Failed to capture photo")
+            showingResult = true
+            return
+        }
 
         // Check for cancellation before API call
         guard !Task.isCancelled else { return }

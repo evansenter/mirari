@@ -130,10 +130,14 @@ private struct ConfidenceBadge: View {
     let confidence: Double
     let isLow: Bool
 
+    private var confidencePercentage: String {
+        String(format: "%.0f%%", confidence * 100)
+    }
+
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: isLow ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
-            Text(isLow ? "Low" : "High")
+            Text(confidencePercentage)
         }
         .font(.caption)
         .fontWeight(.semibold)

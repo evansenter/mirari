@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,7 +26,7 @@
 /* Begin PBXFileReference section */
 		0708B63F8E04335D15C17780 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1CB055BACA879523534E6707 /* MirariApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirariApp.swift; sourceTree = "<group>"; };
-		2E7BA7A97A8A4B7653A8EA04 /* Mirari.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mirari.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E7BA7A97A8A4B7653A8EA04 /* Mirari.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Mirari.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AB4D2D0FDE363D1940E9BAC /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		4F05D27279B45E28E7ED2C0C /* APIKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeys.swift; sourceTree = "<group>"; };
 		5254797CFD7E63057684C4F7 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
@@ -193,6 +193,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					3D5CFAFFE273E1BD91823752 = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = 3C7BFE0CB770A12797848C48 /* Build configuration list for PBXProject "Mirari" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -207,6 +212,7 @@
 			packageReferences = (
 				E1C444989B8A69CCBC97D540 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -254,7 +260,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QQ8T4Y747J;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Mirari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -338,7 +343,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = QQ8T4Y747J;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Mirari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

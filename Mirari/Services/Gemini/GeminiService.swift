@@ -59,13 +59,22 @@ final class GeminiService {
             )
 
             guard let text = response.text, !text.isEmpty else {
+                print("[GeminiService] Empty response received from API")
                 throw GeminiError.emptyResponse
             }
 
             return try parseResponse(text)
         } catch let error as GeminiError {
+            print("[GeminiService] Gemini error: \(error.localizedDescription)")
             throw error
+        } catch let error as URLError {
+            print("[GeminiService] Network error: \(error.localizedDescription)")
+            throw GeminiError.apiError("Network error: \(error.localizedDescription)")
+        } catch let error as DecodingError {
+            print("[GeminiService] Decoding error: \(error)")
+            throw GeminiError.parsingFailed("Decoding error: \(error.localizedDescription)")
         } catch {
+            print("[GeminiService] Unknown error: \(error)")
             throw GeminiError.apiError(error.localizedDescription)
         }
     }
@@ -84,19 +93,41 @@ final class GeminiService {
         }
 
         guard let data = cleaned.data(using: .utf8) else {
+            print("[GeminiService] Failed to convert cleaned text to UTF-8 data")
             throw GeminiError.parsingFailed("Invalid text encoding")
         }
 
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw GeminiError.parsingFailed("Invalid JSON structure")
+        let json: [String: Any]
+        do {
+            guard let parsedJson = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                print("[GeminiService] JSON root is not a dictionary")
+                throw GeminiError.parsingFailed("Expected JSON object at root")
+            }
+            json = parsedJson
+        } catch let error as GeminiError {
+            throw error
+        } catch {
+            print("[GeminiService] JSON parsing error: \(error)")
+            throw GeminiError.parsingFailed("Invalid JSON: \(error.localizedDescription)")
         }
 
-        let name = json["name"] as? String ?? "Unknown Card"
+        // Name is required
+        guard let name = json["name"] as? String, !name.isEmpty else {
+            print("[GeminiService] Missing or empty 'name' field in response")
+            throw GeminiError.parsingFailed("Missing required 'name' field")
+        }
+
         let setCode = json["set_code"] as? String
         let setName = json["set_name"] as? String
         let collectorNumber = json["collector_number"] as? String
-        let confidence = json["confidence"] as? Double ?? 0.0
+        let rawConfidence = json["confidence"] as? Double ?? 0.0
+        // Clamp confidence to valid range
+        let confidence = min(max(rawConfidence, 0.0), 1.0)
         let features = json["features"] as? [String] ?? []
+
+        if rawConfidence != confidence {
+            print("[GeminiService] Confidence \(rawConfidence) clamped to \(confidence)")
+        }
 
         return DetectionResult(
             name: name,
