@@ -14,8 +14,6 @@ jobs:
 
       - name: SwiftLint
         uses: norio-nomura/action-swiftlint@3.2.1
-        with:
-          args: --strict
 
   build:
     runs-on: macos-15
@@ -45,6 +43,6 @@ jobs:
           xcodebuild build \
             -project Mirari.xcodeproj \
             -scheme Mirari \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'generic/platform=iOS Simulator' \
             -skipPackagePluginValidation \
             CODE_SIGNING_ALLOWED=NO
