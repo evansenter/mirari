@@ -43,6 +43,6 @@ jobs:
           xcodebuild build \
             -project Mirari.xcodeproj \
             -scheme Mirari \
-            -destination 'generic/platform=iOS Simulator' \
+            -destination 'generic/platform=iOS' \
             -skipPackagePluginValidation \
             CODE_SIGNING_ALLOWED=NO
