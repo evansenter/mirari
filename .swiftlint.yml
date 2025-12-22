@@ -1,0 +1,39 @@
+included:
+  - Mirari
+
+excluded:
+  - Mirari/Resources
+
+disabled_rules:
+  - trailing_comma
+  - identifier_name
+  - type_body_length
+  - file_length
+  - function_body_length
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - contains_over_first_not_nil
+  - discouraged_object_literal
+  - empty_string
+  - first_where
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - prohibited_super_call
+  - sorted_first_last
+  - yoda_condition
+
+line_length:
+  warning: 150
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+nesting:
+  type_level: 3
+  function_level: 3
+
+force_cast: warning
+force_try: warning

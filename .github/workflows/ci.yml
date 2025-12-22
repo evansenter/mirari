@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  swiftlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SwiftLint
+        uses: norio-nomura/action-swiftlint@3.2.1
+        with:
+          args: --strict
+
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Create APIKeys.swift
+        run: |
+          mkdir -p Mirari/Utilities
+          cat > Mirari/Utilities/APIKeys.swift << 'EOF'
+          enum APIKeys {
+              static let gemini = "CI_PLACEHOLDER_KEY"
+          }
+          EOF
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Mirari.xcodeproj \
+            -scheme Mirari \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
