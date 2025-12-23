@@ -133,7 +133,7 @@ struct DetectedCardView: View {
                     quantity: $quantity,
                     condition: $condition,
                     conditions: conditions,
-                    hasFoilPrinting: scryfallCard?.foil ?? true
+                    hasFoilPrinting: scryfallCard?.foil ?? false
                 )
 
                 // Save button
