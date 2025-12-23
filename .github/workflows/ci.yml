@@ -40,9 +40,9 @@ jobs:
           }
           EOF
 
-      - name: Build
+      - name: Build and Test
         run: |
-          xcodebuild build \
+          xcodebuild test \
             -project Mirari.xcodeproj \
             -scheme Mirari \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
