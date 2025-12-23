@@ -88,7 +88,13 @@ final class GeminiService {
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Try to extract JSON if there's extra text around it
+        // Check if it's an array (which we don't support) before extracting
+        if cleaned.hasPrefix("[") {
+            print("[GeminiService] JSON root is an array, expected object")
+            throw GeminiError.parsingFailed("Expected JSON object at root, not array")
+        }
+
+        // Try to extract JSON object if there's extra text around it
         if let startIndex = cleaned.firstIndex(of: "{"),
            let endIndex = cleaned.lastIndex(of: "}") {
             cleaned = String(cleaned[startIndex...endIndex])
