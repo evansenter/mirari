@@ -80,7 +80,7 @@ struct DetectedCardView: View {
                         .shadow(radius: 8)
                 case .failure(let error):
                     // Fall back to captured image on failure
-                    let _ = print("[DetectedCardView] Failed to load Scryfall image: \(error.localizedDescription)")
+                    _ = print("[DetectedCardView] Failed to load Scryfall image: \(error.localizedDescription)")
                     capturedImageView
                 @unknown default:
                     capturedImageView
