@@ -4,10 +4,13 @@ import AVFoundation
 struct ScannerView: View {
     @State private var cameraManager = CameraManager()
     @State private var geminiService = GeminiService()
+    @State private var scryfallService = ScryfallService()
     @State private var isCapturing = false
     @State private var showingResult = false
     @State private var detectionResult: DetectionResult?
+    @State private var scryfallCard: ScryfallCard?
     @State private var detectionError: Error?
+    @State private var scryfallError: Error?
     @State private var captureTask: Task<Void, Never>?
 
     var body: some View {
@@ -76,7 +79,9 @@ struct ScannerView: View {
                     DetectedCardView(
                         capturedImage: image,
                         detectionResult: detectionResult,
-                        detectionError: detectionError
+                        scryfallCard: scryfallCard,
+                        detectionError: detectionError,
+                        scryfallError: scryfallError
                     )
                 }
             }
@@ -92,7 +97,9 @@ struct ScannerView: View {
 
         // Reset previous results
         detectionResult = nil
+        scryfallCard = nil
         detectionError = nil
+        scryfallError = nil
 
         // Capture photo
         guard let image = await cameraManager.capturePhoto() else {
@@ -107,7 +114,22 @@ struct ScannerView: View {
 
         // Identify card with Gemini
         do {
-            detectionResult = try await geminiService.identifyCard(image: image)
+            let detection = try await geminiService.identifyCard(image: image)
+            detectionResult = detection
+
+            // Check for cancellation before Scryfall lookup
+            guard !Task.isCancelled else { return }
+
+            // Look up card on Scryfall to get full details
+            do {
+                scryfallCard = try await scryfallService.lookupFromDetection(detection)
+                print("[ScannerView] Scryfall lookup successful: \(scryfallCard?.name ?? "unknown")")
+            } catch {
+                // Scryfall lookup failure is non-fatal - we still show Gemini results
+                // But we capture the error to show a warning to the user
+                print("[ScannerView] Scryfall lookup failed: \(error.localizedDescription)")
+                scryfallError = error
+            }
         } catch {
             // Don't show error if cancelled
             guard !Task.isCancelled else { return }

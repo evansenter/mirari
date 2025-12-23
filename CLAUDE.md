@@ -101,7 +101,7 @@ Camera features require a physical iPhone. Simulator won't work for scanning.
 
 - [x] **Phase 1**: Project setup & camera preview
 - [x] **Phase 2**: Gemini Frame-by-Frame detection (gemini-3-flash-preview)
-- [ ] **Phase 3**: Scryfall API integration
+- [x] **Phase 3**: Scryfall API integration
 - [ ] **Phase 4**: Collection management with SwiftData
 - [ ] **Phase 5**: Gemini Live API streaming (Gemini 2.5 Flash)
 - [ ] **Phase 6**: CSV import/export

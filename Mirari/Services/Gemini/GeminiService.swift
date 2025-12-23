@@ -79,14 +79,23 @@ final class GeminiService {
         }
     }
 
-    private func parseResponse(_ text: String) throws -> DetectionResult {
+    /// Parse the AI response text into a DetectionResult
+    /// Visible for testing
+    func parseResponse(_ text: String) throws -> DetectionResult {
         // Clean response - remove markdown code blocks if present
         var cleaned = text
             .replacingOccurrences(of: "```json", with: "")
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Try to extract JSON if there's extra text around it
+        // Gemini is instructed to return a single JSON object per card.
+        // If it returns an array, it likely detected multiple cards or misunderstood the prompt.
+        if cleaned.hasPrefix("[") {
+            print("[GeminiService] JSON root is an array, expected object")
+            throw GeminiError.parsingFailed("Expected JSON object at root, not array")
+        }
+
+        // Try to extract JSON object if there's extra text around it
         if let startIndex = cleaned.firstIndex(of: "{"),
            let endIndex = cleaned.lastIndex(of: "}") {
             cleaned = String(cleaned[startIndex...endIndex])

@@ -8,20 +8,36 @@
 
 /* Begin PBXBuildFile section */
 		0671545ECAADC29ED2B9B908 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB4D2D0FDE363D1940E9BAC /* CameraManager.swift */; };
+		076E0E9410D69986B85B0ECF /* ScryfallModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAEB4E49460768B95694352 /* ScryfallModelsTests.swift */; };
 		0FD26285286651CBF7F99AB5 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = B6F84BC33C92D8E72E4E18D0 /* FirebaseAILogic */; };
 		190E721C0A251B555BF861BF /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5254797CFD7E63057684C4F7 /* Card.swift */; };
+		1B9179AB6D8E302A1A9FD038 /* DetectionResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E02796B7089FA1C24128DD /* DetectionResultTests.swift */; };
 		22F916FD598B763D78995421 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5BAFFD338734731DC0CC1C41 /* GoogleService-Info.plist */; };
+		366A8A320F6290AD2B8F333A /* ScryfallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B344B9912F34053B34BB259A /* ScryfallService.swift */; };
 		5AA7C0F5EE24CE8642304D0E /* CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63C1A278E19CD935B09DEA3A /* CollectionView.swift */; };
+		5D47221B94CB962BF78ADC69 /* ScryfallModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F9F4B90CF3CBD78CDD4A7F /* ScryfallModels.swift */; };
 		68176960A0F587C08B05031F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0708B63F8E04335D15C17780 /* Assets.xcassets */; };
 		7A3344A23D1D7F20974F1211 /* APIKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F05D27279B45E28E7ED2C0C /* APIKeys.swift */; };
 		7FF2F5B1AD5C406376C3DE74 /* DetectedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4779CDCA24A7989390E87B9 /* DetectedCardView.swift */; };
+		86FE19EAAB1EBC05E37BDF60 /* ScryfallServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BE096681E2142C01563455 /* ScryfallServiceTests.swift */; };
 		91289300AA46F867B86565E3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D804A1F7D6EFEB075F0C2E08 /* FirebaseCore */; };
 		9D0C124822F7BA82248400A6 /* GeminiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 690BB9668BC6B5722DAB56ED /* GeminiService.swift */; };
 		B3D45ACB6362612C776EA882 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA750FC5EB9E579DCC26EE3 /* ScannerView.swift */; };
+		C24E6CA6259D60E814643E10 /* GeminiServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F202080E278C6D9595DF996 /* GeminiServiceTests.swift */; };
 		EBAA6787E4B4C2A22752EF31 /* MirariApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB055BACA879523534E6707 /* MirariApp.swift */; };
 		F38B87408D594EA118FC0027 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB702AEDA063CBBFACAE5CD /* ContentView.swift */; };
 		F9E06F723BB3DE6A56AEF688 /* DetectionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 547356902BA7D924781B5E60 /* DetectionResult.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		77FE1353E3DB1A857756D52A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 36ED8E291F7613826A0C968B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3D5CFAFFE273E1BD91823752;
+			remoteInfo = Mirari;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0708B63F8E04335D15C17780 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -33,9 +49,16 @@
 		547356902BA7D924781B5E60 /* DetectionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionResult.swift; sourceTree = "<group>"; };
 		5BAFFD338734731DC0CC1C41 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5BB702AEDA063CBBFACAE5CD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5F202080E278C6D9595DF996 /* GeminiServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiServiceTests.swift; sourceTree = "<group>"; };
 		63C1A278E19CD935B09DEA3A /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
 		690BB9668BC6B5722DAB56ED /* GeminiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiService.swift; sourceTree = "<group>"; };
+		88E02796B7089FA1C24128DD /* DetectionResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionResultTests.swift; sourceTree = "<group>"; };
+		9B61C10E08039C9291439E72 /* MirariTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MirariTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9FAEB4E49460768B95694352 /* ScryfallModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScryfallModelsTests.swift; sourceTree = "<group>"; };
+		B344B9912F34053B34BB259A /* ScryfallService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScryfallService.swift; sourceTree = "<group>"; };
 		BDA750FC5EB9E579DCC26EE3 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
+		E0F9F4B90CF3CBD78CDD4A7F /* ScryfallModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScryfallModels.swift; sourceTree = "<group>"; };
+		E3BE096681E2142C01563455 /* ScryfallServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScryfallServiceTests.swift; sourceTree = "<group>"; };
 		EA60869947BFB64323148CAE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F4779CDCA24A7989390E87B9 /* DetectedCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectedCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -60,6 +83,17 @@
 				A7A684E0825BD34F3C7AEC81 /* Scanner */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		1F49EFEF7B8C214684199133 /* MirariTests */ = {
+			isa = PBXGroup;
+			children = (
+				88E02796B7089FA1C24128DD /* DetectionResultTests.swift */,
+				5F202080E278C6D9595DF996 /* GeminiServiceTests.swift */,
+				9FAEB4E49460768B95694352 /* ScryfallModelsTests.swift */,
+				E3BE096681E2142C01563455 /* ScryfallServiceTests.swift */,
+			);
+			path = MirariTests;
 			sourceTree = "<group>";
 		};
 		3B33344FABC45C5BDD8C8D3E /* Models */ = {
@@ -91,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				88A19ECD791C068DAF6EA308 /* Gemini */,
+				EF2960137A32ABD94481D903 /* Scryfall */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -149,6 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				7B094ABB2D3B933F99BE7A44 /* Mirari */,
+				1F49EFEF7B8C214684199133 /* MirariTests */,
 				DFE147C2F5C246D978A17E86 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -157,13 +193,41 @@
 			isa = PBXGroup;
 			children = (
 				2E7BA7A97A8A4B7653A8EA04 /* Mirari.app */,
+				9B61C10E08039C9291439E72 /* MirariTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		EF2960137A32ABD94481D903 /* Scryfall */ = {
+			isa = PBXGroup;
+			children = (
+				E0F9F4B90CF3CBD78CDD4A7F /* ScryfallModels.swift */,
+				B344B9912F34053B34BB259A /* ScryfallService.swift */,
+			);
+			path = Scryfall;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		329A5ED3E8DDE74A902E8433 /* MirariTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D85FBE6AD7B9771D4802DE95 /* Build configuration list for PBXNativeTarget "MirariTests" */;
+			buildPhases = (
+				2D22378470B0E7B08F29CB10 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FBEBD78069FCABC9D8A34F43 /* PBXTargetDependency */,
+			);
+			name = MirariTests;
+			packageProductDependencies = (
+			);
+			productName = MirariTests;
+			productReference = 9B61C10E08039C9291439E72 /* MirariTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		3D5CFAFFE273E1BD91823752 /* Mirari */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 677874C2955F1F4415226D4B /* Build configuration list for PBXNativeTarget "Mirari" */;
@@ -194,6 +258,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					329A5ED3E8DDE74A902E8433 = {
+						DevelopmentTeam = "";
+					};
 					3D5CFAFFE273E1BD91823752 = {
 						DevelopmentTeam = "";
 					};
@@ -217,6 +284,7 @@
 			projectRoot = "";
 			targets = (
 				3D5CFAFFE273E1BD91823752 /* Mirari */,
+				329A5ED3E8DDE74A902E8433 /* MirariTests */,
 			);
 		};
 /* End PBXProject section */
@@ -248,10 +316,31 @@
 				9D0C124822F7BA82248400A6 /* GeminiService.swift in Sources */,
 				EBAA6787E4B4C2A22752EF31 /* MirariApp.swift in Sources */,
 				B3D45ACB6362612C776EA882 /* ScannerView.swift in Sources */,
+				5D47221B94CB962BF78ADC69 /* ScryfallModels.swift in Sources */,
+				366A8A320F6290AD2B8F333A /* ScryfallService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D22378470B0E7B08F29CB10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B9179AB6D8E302A1A9FD038 /* DetectionResultTests.swift in Sources */,
+				C24E6CA6259D60E814643E10 /* GeminiServiceTests.swift in Sources */,
+				076E0E9410D69986B85B0ECF /* ScryfallModelsTests.swift in Sources */,
+				86FE19EAAB1EBC05E37BDF60 /* ScryfallServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FBEBD78069FCABC9D8A34F43 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3D5CFAFFE273E1BD91823752 /* Mirari */;
+			targetProxy = 77FE1353E3DB1A857756D52A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		36FB12387D023FBFF5F29315 /* Debug */ = {
@@ -272,6 +361,23 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		};
+		7725943D4C335D75052E880D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirari.MirariTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mirari.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mirari";
+			};
+			name = Release;
 		};
 		B75D4D3D0C8BF63F36CAD512 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -413,6 +519,23 @@
 			};
 			name = Release;
 		};
+		E31BE6C4E1A5EC4EA56DD011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirari.MirariTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mirari.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mirari";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -430,6 +553,15 @@
 			buildConfigurations = (
 				36FB12387D023FBFF5F29315 /* Debug */,
 				C8564526E312F51C9D7500B7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D85FBE6AD7B9771D4802DE95 /* Build configuration list for PBXNativeTarget "MirariTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E31BE6C4E1A5EC4EA56DD011 /* Debug */,
+				7725943D4C335D75052E880D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

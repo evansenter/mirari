@@ -25,14 +25,33 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Get weekly cache key
+        id: week
+        run: echo "week=$(date +%Y-%U)" >> $GITHUB_OUTPUT
+
+      - name: Cache XcodeGen
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/xcodegen
+          key: xcodegen-${{ runner.os }}-${{ steps.week.outputs.week }}
+
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: which xcodegen || brew install xcodegen
 
-      - name: Generate Xcode Project
-        run: xcodegen generate
+      - name: Cache Swift Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            .build
+          key: spm-${{ runner.os }}-${{ steps.week.outputs.week }}-${{ hashFiles('project.yml') }}
+          restore-keys: |
+            spm-${{ runner.os }}-${{ steps.week.outputs.week }}-
+            spm-${{ runner.os }}-
 
-      - name: Create APIKeys.swift
+      - name: Create CI placeholder files
         run: |
+          # Create APIKeys.swift (gitignored)
           mkdir -p Mirari/Utilities
           cat > Mirari/Utilities/APIKeys.swift << 'EOF'
           enum APIKeys {
@@ -40,9 +59,46 @@ jobs:
           }
           EOF
 
-      - name: Build
+          # Create GoogleService-Info.plist (gitignored) with minimal valid config
+          cat > Mirari/GoogleService-Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>API_KEY</key>
+              <string>CI_PLACEHOLDER</string>
+              <key>GCM_SENDER_ID</key>
+              <string>000000000000</string>
+              <key>PLIST_VERSION</key>
+              <string>1</string>
+              <key>BUNDLE_ID</key>
+              <string>com.mirari.app</string>
+              <key>PROJECT_ID</key>
+              <string>ci-placeholder</string>
+              <key>STORAGE_BUCKET</key>
+              <string>ci-placeholder.appspot.com</string>
+              <key>IS_ADS_ENABLED</key>
+              <false/>
+              <key>IS_ANALYTICS_ENABLED</key>
+              <false/>
+              <key>IS_APPINVITE_ENABLED</key>
+              <false/>
+              <key>IS_GCM_ENABLED</key>
+              <false/>
+              <key>IS_SIGNIN_ENABLED</key>
+              <false/>
+              <key>GOOGLE_APP_ID</key>
+              <string>1:000000000000:ios:0000000000000000000000</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Build and Test
         run: |
-          xcodebuild build \
+          xcodebuild test \
             -project Mirari.xcodeproj \
             -scheme Mirari \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
