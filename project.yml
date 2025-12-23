@@ -54,3 +54,18 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSCameraUsageDescription: "Mirari needs camera access to scan and identify Magic: The Gathering cards."
+
+  MirariTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: MirariTests
+        excludes:
+          - "**/.DS_Store"
+    dependencies:
+      - target: Mirari
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Mirari.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mirari"
+        BUNDLE_LOADER: "$(TEST_HOST)"

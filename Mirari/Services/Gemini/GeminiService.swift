@@ -79,7 +79,9 @@ final class GeminiService {
         }
     }
 
-    private func parseResponse(_ text: String) throws -> DetectionResult {
+    /// Parse the AI response text into a DetectionResult
+    /// Visible for testing
+    func parseResponse(_ text: String) throws -> DetectionResult {
         // Clean response - remove markdown code blocks if present
         var cleaned = text
             .replacingOccurrences(of: "```json", with: "")

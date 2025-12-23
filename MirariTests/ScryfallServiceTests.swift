@@ -1,0 +1,428 @@
+import XCTest
+@testable import Mirari
+
+// MARK: - Mock URL Protocol
+
+/// A mock URL protocol for testing network requests without hitting the real API
+final class MockURLProtocol: URLProtocol {
+    /// Handler to provide mock responses
+    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        return true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        return request
+    }
+
+    override func startLoading() {
+        guard let handler = MockURLProtocol.requestHandler else {
+            XCTFail("No request handler set")
+            return
+        }
+
+        do {
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
+}
+
+// MARK: - Scryfall Service Tests
+
+@MainActor
+final class ScryfallServiceTests: XCTestCase {
+
+    var service: ScryfallService!
+    var mockSession: URLSession!
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        mockSession = URLSession(configuration: config)
+        service = ScryfallService(session: mockSession)
+    }
+
+    override func tearDown() async throws {
+        MockURLProtocol.requestHandler = nil
+        service = nil
+        mockSession = nil
+        try await super.tearDown()
+    }
+
+    // MARK: - Helper Methods
+
+    private func mockResponse(
+        json: String,
+        statusCode: Int = 200,
+        for urlContaining: String? = nil
+    ) {
+        MockURLProtocol.requestHandler = { request in
+            if let urlContaining = urlContaining {
+                XCTAssertTrue(
+                    request.url?.absoluteString.contains(urlContaining) ?? false,
+                    "Expected URL to contain '\(urlContaining)', got '\(request.url?.absoluteString ?? "nil")'"
+                )
+            }
+
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: statusCode,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, json.data(using: .utf8)!)
+        }
+    }
+
+    // MARK: - Lookup Card Tests
+
+    func testLookupCard_success() async throws {
+        let cardJSON = """
+        {
+            "id": "e3285e6b-3e79-4d7c-bf96-d920f973b122",
+            "name": "Lightning Bolt",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/e3285e6b",
+            "scryfall_uri": "https://scryfall.com/card/lea/161",
+            "layout": "normal",
+            "set_id": "288bd996-960e-448b-a187-9f12d6281c7d",
+            "set": "lea",
+            "set_name": "Limited Edition Alpha",
+            "set_type": "core",
+            "collector_number": "161",
+            "rarity": "common",
+            "mana_cost": "{R}",
+            "type_line": "Instant",
+            "oracle_text": "Lightning Bolt deals 3 damage to any target."
+        }
+        """
+
+        mockResponse(json: cardJSON, for: "/cards/lea/161")
+
+        let card = try await service.lookupCard(setCode: "lea", collectorNumber: "161")
+
+        XCTAssertEqual(card.name, "Lightning Bolt")
+        XCTAssertEqual(card.set, "lea")
+        XCTAssertEqual(card.collectorNumber, "161")
+        XCTAssertEqual(card.manaCost, "{R}")
+    }
+
+    func testLookupCard_normalizesSetCode() async throws {
+        let cardJSON = """
+        {
+            "id": "abc123",
+            "name": "Test Card",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/abc123",
+            "scryfall_uri": "https://scryfall.com/card/tst/1",
+            "layout": "normal",
+            "set_id": "set123",
+            "set": "tst",
+            "set_name": "Test Set",
+            "set_type": "core",
+            "collector_number": "1",
+            "rarity": "common"
+        }
+        """
+
+        mockResponse(json: cardJSON, for: "/cards/tst/1")
+
+        // Use uppercase set code - should be normalized to lowercase
+        let card = try await service.lookupCard(setCode: "TST", collectorNumber: "1")
+
+        XCTAssertEqual(card.set, "tst")
+    }
+
+    func testLookupCard_notFound() async throws {
+        let errorJSON = """
+        {
+            "object": "error",
+            "code": "not_found",
+            "status": 404,
+            "details": "No card found with the given ID."
+        }
+        """
+
+        mockResponse(json: errorJSON, statusCode: 404)
+
+        do {
+            _ = try await service.lookupCard(setCode: "xyz", collectorNumber: "999")
+            XCTFail("Expected notFound error")
+        } catch let error as ScryfallError {
+            XCTAssertEqual(error, .notFound)
+        }
+    }
+
+    func testLookupCard_rateLimited() async throws {
+        let errorJSON = """
+        {
+            "object": "error",
+            "code": "too_many_requests",
+            "status": 429,
+            "details": "You have exceeded the rate limit."
+        }
+        """
+
+        mockResponse(json: errorJSON, statusCode: 429)
+
+        do {
+            _ = try await service.lookupCard(setCode: "lea", collectorNumber: "161")
+            XCTFail("Expected rateLimited error")
+        } catch let error as ScryfallError {
+            XCTAssertEqual(error, .rateLimited)
+        }
+    }
+
+    // MARK: - Search by Name Tests
+
+    func testSearchByName_success() async throws {
+        let cardJSON = """
+        {
+            "id": "abc123",
+            "name": "Counterspell",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/abc123",
+            "scryfall_uri": "https://scryfall.com/card/lea/54",
+            "layout": "normal",
+            "set_id": "set123",
+            "set": "lea",
+            "set_name": "Limited Edition Alpha",
+            "set_type": "core",
+            "collector_number": "54",
+            "rarity": "uncommon"
+        }
+        """
+
+        mockResponse(json: cardJSON, for: "/cards/named?exact=")
+
+        let card = try await service.searchByName("Counterspell")
+
+        XCTAssertEqual(card.name, "Counterspell")
+    }
+
+    func testFuzzySearchByName_success() async throws {
+        let cardJSON = """
+        {
+            "id": "abc123",
+            "name": "Lightning Bolt",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/abc123",
+            "scryfall_uri": "https://scryfall.com/card/2xm/117",
+            "layout": "normal",
+            "set_id": "set123",
+            "set": "2xm",
+            "set_name": "Double Masters",
+            "set_type": "masters",
+            "collector_number": "117",
+            "rarity": "uncommon"
+        }
+        """
+
+        mockResponse(json: cardJSON, for: "/cards/named?fuzzy=")
+
+        // Typo in name - fuzzy search should still work
+        let card = try await service.fuzzySearchByName("Lightening Bolt")
+
+        XCTAssertEqual(card.name, "Lightning Bolt")
+    }
+
+    // MARK: - Search Query Tests
+
+    func testSearch_success() async throws {
+        let searchJSON = """
+        {
+            "object": "list",
+            "total_cards": 50,
+            "has_more": true,
+            "data": [
+                {
+                    "id": "card1",
+                    "name": "Lightning Bolt",
+                    "lang": "en",
+                    "uri": "https://api.scryfall.com/cards/card1",
+                    "scryfall_uri": "https://scryfall.com/card/2xm/117",
+                    "layout": "normal",
+                    "set_id": "set1",
+                    "set": "2xm",
+                    "set_name": "Double Masters",
+                    "set_type": "masters",
+                    "collector_number": "117",
+                    "rarity": "uncommon"
+                }
+            ]
+        }
+        """
+
+        mockResponse(json: searchJSON, for: "/cards/search")
+
+        let response = try await service.search(query: "Lightning Bolt", page: 1)
+
+        XCTAssertEqual(response.totalCards, 50)
+        XCTAssertTrue(response.hasMore)
+        XCTAssertEqual(response.data.count, 1)
+        XCTAssertEqual(response.data[0].name, "Lightning Bolt")
+    }
+
+    // MARK: - Lookup From Detection Tests
+
+    func testLookupFromDetection_exactLookup() async throws {
+        let cardJSON = """
+        {
+            "id": "abc123",
+            "name": "Lightning Bolt",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/abc123",
+            "scryfall_uri": "https://scryfall.com/card/lea/161",
+            "layout": "normal",
+            "set_id": "set123",
+            "set": "lea",
+            "set_name": "Limited Edition Alpha",
+            "set_type": "core",
+            "collector_number": "161",
+            "rarity": "common"
+        }
+        """
+
+        mockResponse(json: cardJSON, for: "/cards/lea/161")
+
+        let detection = DetectionResult(
+            name: "Lightning Bolt",
+            setCode: "lea",
+            setName: "Limited Edition Alpha",
+            collectorNumber: "161",
+            confidence: 0.95,
+            features: []
+        )
+
+        let card = try await service.lookupFromDetection(detection)
+
+        XCTAssertEqual(card.name, "Lightning Bolt")
+        XCTAssertEqual(card.set, "lea")
+    }
+
+    func testLookupFromDetection_fallsBackToNameSearch() async throws {
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestCount += 1
+
+            let url = request.url!.absoluteString
+
+            // First request: exact lookup - return 404
+            if url.contains("/cards/xxx/999") {
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 404,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                let errorJSON = """
+                {"object": "error", "code": "not_found", "status": 404, "details": "Not found"}
+                """.data(using: .utf8)!
+                return (response, errorJSON)
+            }
+
+            // Second request: name+set search - return 404
+            if url.contains("/cards/search") {
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 404,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                let errorJSON = """
+                {"object": "error", "code": "not_found", "status": 404, "details": "Not found"}
+                """.data(using: .utf8)!
+                return (response, errorJSON)
+            }
+
+            // Third request: exact name - return card
+            if url.contains("/cards/named?exact=") {
+                let cardJSON = """
+                {
+                    "id": "abc123",
+                    "name": "Lightning Bolt",
+                    "lang": "en",
+                    "uri": "https://api.scryfall.com/cards/abc123",
+                    "scryfall_uri": "https://scryfall.com/card/2xm/117",
+                    "layout": "normal",
+                    "set_id": "set123",
+                    "set": "2xm",
+                    "set_name": "Double Masters",
+                    "set_type": "masters",
+                    "collector_number": "117",
+                    "rarity": "uncommon"
+                }
+                """.data(using: .utf8)!
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, cardJSON)
+            }
+
+            XCTFail("Unexpected request: \(url)")
+            throw ScryfallError.notFound
+        }
+
+        let detection = DetectionResult(
+            name: "Lightning Bolt",
+            setCode: "xxx",  // Invalid set code
+            setName: nil,
+            collectorNumber: "999",
+            confidence: 0.7,
+            features: []
+        )
+
+        let card = try await service.lookupFromDetection(detection)
+
+        XCTAssertEqual(card.name, "Lightning Bolt")
+        // Should have made multiple requests (exact lookup failed, fell back to name search)
+        XCTAssertGreaterThan(requestCount, 1)
+    }
+
+    // MARK: - Error Tests
+
+    func testScryfallError_descriptions() {
+        XCTAssertEqual(
+            ScryfallError.invalidURL.errorDescription,
+            "Invalid Scryfall URL."
+        )
+
+        XCTAssertEqual(
+            ScryfallError.notFound.errorDescription,
+            "Card not found on Scryfall."
+        )
+
+        XCTAssertEqual(
+            ScryfallError.rateLimited.errorDescription,
+            "Too many requests. Please wait a moment."
+        )
+
+        XCTAssertEqual(
+            ScryfallError.networkError("timeout").errorDescription,
+            "Network error: timeout"
+        )
+
+        XCTAssertEqual(
+            ScryfallError.apiError("bad request").errorDescription,
+            "Scryfall API error: bad request"
+        )
+
+        XCTAssertEqual(
+            ScryfallError.decodingError("invalid json").errorDescription,
+            "Failed to parse Scryfall response: invalid json"
+        )
+    }
+}

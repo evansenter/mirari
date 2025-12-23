@@ -1,8 +1,19 @@
 import Foundation
 
+// MARK: - Scryfall Service Protocol
+
+/// Protocol for Scryfall API operations, enabling dependency injection and testing
+protocol ScryfallServiceProtocol: Sendable {
+    func lookupCard(setCode: String, collectorNumber: String) async throws -> ScryfallCard
+    func searchByName(_ name: String) async throws -> ScryfallCard
+    func fuzzySearchByName(_ name: String) async throws -> ScryfallCard
+    func search(query: String, page: Int) async throws -> ScryfallSearchResponse
+    func lookupFromDetection(_ detection: DetectionResult) async throws -> ScryfallCard
+}
+
 // MARK: - Scryfall Errors
 
-enum ScryfallError: LocalizedError, Sendable {
+enum ScryfallError: LocalizedError, Sendable, Equatable {
     case invalidURL
     case networkError(String)
     case notFound
@@ -32,20 +43,26 @@ enum ScryfallError: LocalizedError, Sendable {
 
 /// Service for interacting with the Scryfall API
 @MainActor
-final class ScryfallService: Sendable {
+final class ScryfallService: ScryfallServiceProtocol {
     private let baseURL = "https://api.scryfall.com"
     private let session: URLSession
 
     /// Scryfall requires a user-agent for API requests
-    private let userAgent = "Mirari/1.0 (iOS MTG Scanner)"
+    private static let userAgent = "Mirari/1.0 (iOS MTG Scanner)"
 
+    /// Default initializer with standard URLSession configuration
     init() {
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = [
-            "User-Agent": userAgent,
+            "User-Agent": Self.userAgent,
             "Accept": "application/json"
         ]
         self.session = URLSession(configuration: config)
+    }
+
+    /// Initializer for testing with custom URLSession
+    init(session: URLSession) {
+        self.session = session
     }
 
     // MARK: - Primary Lookup: Set Code + Collector Number
