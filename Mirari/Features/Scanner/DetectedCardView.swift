@@ -6,6 +6,7 @@ struct DetectedCardView: View {
     let detectionResult: DetectionResult?
     let scryfallCard: ScryfallCard?
     let detectionError: Error?
+    let scryfallError: Error?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -108,6 +109,11 @@ struct DetectedCardView: View {
         VStack(spacing: 16) {
             // Main result card with Scryfall enrichment
             ResultCard(result: result, scryfallCard: scryfallCard)
+
+            // Scryfall unavailable warning
+            if scryfallCard == nil {
+                ScryfallUnavailableCard(error: scryfallError)
+            }
 
             // Oracle text section (if available from Scryfall)
             if let oracleText = scryfallCard?.fullOracleText, !oracleText.isEmpty {
@@ -525,6 +531,52 @@ private struct LoadingCard: View {
     }
 }
 
+private struct ScryfallUnavailableCard: View {
+    let error: Error?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.icloud")
+                .font(.title2)
+                .foregroundStyle(.orange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Limited Card Data")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.orange.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal)
+    }
+
+    private var errorMessage: String {
+        if let scryfallError = error as? ScryfallError {
+            switch scryfallError {
+            case .networkError:
+                return "Network unavailable. Prices and high-res images not loaded."
+            case .notFound:
+                return "Card not found on Scryfall. This may be a new or special printing."
+            case .rateLimited:
+                return "Too many requests. Please try again in a moment."
+            default:
+                return "Could not fetch full card details from Scryfall."
+            }
+        }
+        if error != nil {
+            return "Could not fetch full card details. Prices and images unavailable."
+        }
+        return "Scryfall data unavailable. Prices and high-res images not loaded."
+    }
+}
+
 #Preview("With Scryfall Data") {
     let sampleCard = ScryfallCard(
         id: "abc123",
@@ -587,7 +639,8 @@ private struct LoadingCard: View {
             features: ["Black Border"]
         ),
         scryfallCard: sampleCard,
-        detectionError: nil
+        detectionError: nil,
+        scryfallError: nil
     )
     .modelContainer(for: Card.self, inMemory: true)
 }
@@ -604,7 +657,8 @@ private struct LoadingCard: View {
             features: ["Black Border"]
         ),
         scryfallCard: nil,
-        detectionError: nil
+        detectionError: nil,
+        scryfallError: ScryfallError.networkError("Connection failed")
     )
     .modelContainer(for: Card.self, inMemory: true)
 }
@@ -621,7 +675,8 @@ private struct LoadingCard: View {
             features: []
         ),
         scryfallCard: nil,
-        detectionError: nil
+        detectionError: nil,
+        scryfallError: nil
     )
     .modelContainer(for: Card.self, inMemory: true)
 }
@@ -631,7 +686,8 @@ private struct LoadingCard: View {
         capturedImage: UIImage(systemName: "photo")!,
         detectionResult: nil,
         scryfallCard: nil,
-        detectionError: GeminiError.emptyResponse
+        detectionError: GeminiError.emptyResponse,
+        scryfallError: nil
     )
     .modelContainer(for: Card.self, inMemory: true)
 }

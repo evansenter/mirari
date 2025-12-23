@@ -50,6 +50,10 @@ final class ScryfallService: ScryfallServiceProtocol {
     /// Scryfall requires a user-agent for API requests
     private static let userAgent = "Mirari/1.0 (iOS MTG Scanner)"
 
+    /// Rate limiting: Scryfall asks for 50-100ms between requests
+    private var lastRequestTime: Date?
+    private let minimumRequestInterval: TimeInterval = 0.1 // 100ms
+
     /// Default initializer with standard URLSession configuration
     init() {
         let config = URLSessionConfiguration.default
@@ -63,6 +67,20 @@ final class ScryfallService: ScryfallServiceProtocol {
     /// Initializer for testing with custom URLSession
     init(session: URLSession) {
         self.session = session
+    }
+
+    // MARK: - Rate Limiting
+
+    /// Wait if needed to respect Scryfall's rate limit
+    private func throttleIfNeeded() async {
+        if let lastTime = lastRequestTime {
+            let elapsed = Date().timeIntervalSince(lastTime)
+            if elapsed < minimumRequestInterval {
+                let waitTime = minimumRequestInterval - elapsed
+                try? await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
+            }
+        }
+        lastRequestTime = Date()
     }
 
     // MARK: - Primary Lookup: Set Code + Collector Number
@@ -162,10 +180,13 @@ final class ScryfallService: ScryfallServiceProtocol {
                     print("[ScryfallService] Found card via name+set search: \(card.name)")
                     return card
                 }
-            } catch {
-                print("[ScryfallService] Name+set search failed: \(error)")
-                // Continue to fallback
+                // Empty results - continue to fallback
+                print("[ScryfallService] Name+set search returned no results, trying fallback...")
+            } catch ScryfallError.notFound {
+                print("[ScryfallService] Name+set search not found, trying fallback...")
+                // Continue to fallback - this is expected
             }
+            // Other errors (network, rate limit, etc.) propagate up
         }
 
         // Strategy 3: Exact name match
@@ -189,6 +210,7 @@ final class ScryfallService: ScryfallServiceProtocol {
     // MARK: - Private Helpers
 
     private func fetchCard(from url: URL) async throws -> ScryfallCard {
+        await throttleIfNeeded()
         print("[ScryfallService] Fetching: \(url)")
 
         do {
@@ -221,6 +243,7 @@ final class ScryfallService: ScryfallServiceProtocol {
     }
 
     private func fetchSearchResults(from url: URL) async throws -> ScryfallSearchResponse {
+        await throttleIfNeeded()
         print("[ScryfallService] Searching: \(url)")
 
         do {

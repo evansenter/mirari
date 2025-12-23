@@ -6,7 +6,8 @@ import XCTest
 /// A mock URL protocol for testing network requests without hitting the real API
 final class MockURLProtocol: URLProtocol {
     /// Handler to provide mock responses
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    /// Using nonisolated(unsafe) because access is controlled by test framework (single-threaded test execution)
+    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool {
         return true
@@ -390,6 +391,168 @@ final class ScryfallServiceTests: XCTestCase {
         XCTAssertEqual(card.name, "Lightning Bolt")
         // Should have made multiple requests (exact lookup failed, fell back to name search)
         XCTAssertGreaterThan(requestCount, 1)
+    }
+
+    func testLookupFromDetection_nameOnlyFallback() async throws {
+        // Test when detection has no setCode or collectorNumber
+        // Should skip exact lookup and name+set search, go directly to exact name search
+        var requestedURLs: [String] = []
+        MockURLProtocol.requestHandler = { request in
+            let url = request.url!.absoluteString
+            requestedURLs.append(url)
+
+            // Only exact name search should be called
+            if url.contains("/cards/named?exact=") {
+                let cardJSON = """
+                {
+                    "id": "abc123",
+                    "name": "Counterspell",
+                    "lang": "en",
+                    "uri": "https://api.scryfall.com/cards/abc123",
+                    "scryfall_uri": "https://scryfall.com/card/cmr/64",
+                    "layout": "normal",
+                    "set_id": "set123",
+                    "set": "cmr",
+                    "set_name": "Commander Legends",
+                    "set_type": "draft_innovation",
+                    "collector_number": "64",
+                    "rarity": "uncommon"
+                }
+                """.data(using: .utf8)!
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, cardJSON)
+            }
+
+            XCTFail("Unexpected request: \(url)")
+            throw ScryfallError.notFound
+        }
+
+        let detection = DetectionResult(
+            name: "Counterspell",
+            setCode: nil,  // No set code
+            setName: nil,
+            collectorNumber: nil,  // No collector number
+            confidence: 0.8,
+            features: []
+        )
+
+        let card = try await service.lookupFromDetection(detection)
+
+        XCTAssertEqual(card.name, "Counterspell")
+        // Should only have made exact name request (no set code/number = skip first two strategies)
+        XCTAssertEqual(requestedURLs.count, 1)
+        XCTAssertTrue(requestedURLs[0].contains("/cards/named?exact="))
+    }
+
+    func testLookupFromDetection_fuzzyFallback() async throws {
+        // Test when exact name search fails and falls back to fuzzy
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestCount += 1
+            let url = request.url!.absoluteString
+
+            // Exact name search - return 404
+            if url.contains("/cards/named?exact=") {
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 404,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                let errorJSON = """
+                {"object": "error", "code": "not_found", "status": 404, "details": "Not found"}
+                """.data(using: .utf8)!
+                return (response, errorJSON)
+            }
+
+            // Fuzzy search - return card
+            if url.contains("/cards/named?fuzzy=") {
+                let cardJSON = """
+                {
+                    "id": "abc123",
+                    "name": "Llanowar Elves",
+                    "lang": "en",
+                    "uri": "https://api.scryfall.com/cards/abc123",
+                    "scryfall_uri": "https://scryfall.com/card/m19/314",
+                    "layout": "normal",
+                    "set_id": "set123",
+                    "set": "m19",
+                    "set_name": "Core Set 2019",
+                    "set_type": "core",
+                    "collector_number": "314",
+                    "rarity": "common"
+                }
+                """.data(using: .utf8)!
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil
+                )!
+                return (response, cardJSON)
+            }
+
+            XCTFail("Unexpected request: \(url)")
+            throw ScryfallError.notFound
+        }
+
+        let detection = DetectionResult(
+            name: "Llanowar Elfs",  // Misspelled
+            setCode: nil,
+            setName: nil,
+            collectorNumber: nil,
+            confidence: 0.6,
+            features: []
+        )
+
+        let card = try await service.lookupFromDetection(detection)
+
+        XCTAssertEqual(card.name, "Llanowar Elves")  // Corrected by fuzzy search
+        XCTAssertEqual(requestCount, 2)  // Exact failed, fuzzy succeeded
+    }
+
+    func testLookupCard_encodesSpecialCollectorNumbers() async throws {
+        // Test that special collector numbers like "123a" or "★123" are properly URL encoded
+        let cardJSON = """
+        {
+            "id": "abc123",
+            "name": "Plains",
+            "lang": "en",
+            "uri": "https://api.scryfall.com/cards/abc123",
+            "scryfall_uri": "https://scryfall.com/card/jmp/38",
+            "layout": "normal",
+            "set_id": "set123",
+            "set": "jmp",
+            "set_name": "Jumpstart",
+            "set_type": "draft_innovation",
+            "collector_number": "38★",
+            "rarity": "common"
+        }
+        """
+
+        var capturedURL: String?
+        MockURLProtocol.requestHandler = { request in
+            capturedURL = request.url!.absoluteString
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, cardJSON.data(using: .utf8)!)
+        }
+
+        let card = try await service.lookupCard(setCode: "jmp", collectorNumber: "38★")
+
+        XCTAssertEqual(card.name, "Plains")
+        // URL should contain encoded star character (★ = %E2%98%85)
+        XCTAssertNotNil(capturedURL)
+        XCTAssertTrue(capturedURL!.contains("/cards/jmp/38%E2%98%85"))
     }
 
     // MARK: - Error Tests

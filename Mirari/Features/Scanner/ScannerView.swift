@@ -10,6 +10,7 @@ struct ScannerView: View {
     @State private var detectionResult: DetectionResult?
     @State private var scryfallCard: ScryfallCard?
     @State private var detectionError: Error?
+    @State private var scryfallError: Error?
     @State private var captureTask: Task<Void, Never>?
 
     var body: some View {
@@ -79,7 +80,8 @@ struct ScannerView: View {
                         capturedImage: image,
                         detectionResult: detectionResult,
                         scryfallCard: scryfallCard,
-                        detectionError: detectionError
+                        detectionError: detectionError,
+                        scryfallError: scryfallError
                     )
                 }
             }
@@ -97,6 +99,7 @@ struct ScannerView: View {
         detectionResult = nil
         scryfallCard = nil
         detectionError = nil
+        scryfallError = nil
 
         // Capture photo
         guard let image = await cameraManager.capturePhoto() else {
@@ -123,8 +126,9 @@ struct ScannerView: View {
                 print("[ScannerView] Scryfall lookup successful: \(scryfallCard?.name ?? "unknown")")
             } catch {
                 // Scryfall lookup failure is non-fatal - we still show Gemini results
+                // But we capture the error to show a warning to the user
                 print("[ScannerView] Scryfall lookup failed: \(error.localizedDescription)")
-                // Don't set detectionError - we have valid Gemini results
+                scryfallError = error
             }
         } catch {
             // Don't show error if cancelled
