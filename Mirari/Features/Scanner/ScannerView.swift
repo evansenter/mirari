@@ -4,9 +4,11 @@ import AVFoundation
 struct ScannerView: View {
     @State private var cameraManager = CameraManager()
     @State private var geminiService = GeminiService()
+    @State private var scryfallService = ScryfallService()
     @State private var isCapturing = false
     @State private var showingResult = false
     @State private var detectionResult: DetectionResult?
+    @State private var scryfallCard: ScryfallCard?
     @State private var detectionError: Error?
     @State private var captureTask: Task<Void, Never>?
 
@@ -76,6 +78,7 @@ struct ScannerView: View {
                     DetectedCardView(
                         capturedImage: image,
                         detectionResult: detectionResult,
+                        scryfallCard: scryfallCard,
                         detectionError: detectionError
                     )
                 }
@@ -92,6 +95,7 @@ struct ScannerView: View {
 
         // Reset previous results
         detectionResult = nil
+        scryfallCard = nil
         detectionError = nil
 
         // Capture photo
@@ -107,7 +111,21 @@ struct ScannerView: View {
 
         // Identify card with Gemini
         do {
-            detectionResult = try await geminiService.identifyCard(image: image)
+            let detection = try await geminiService.identifyCard(image: image)
+            detectionResult = detection
+
+            // Check for cancellation before Scryfall lookup
+            guard !Task.isCancelled else { return }
+
+            // Look up card on Scryfall to get full details
+            do {
+                scryfallCard = try await scryfallService.lookupFromDetection(detection)
+                print("[ScannerView] Scryfall lookup successful: \(scryfallCard?.name ?? "unknown")")
+            } catch {
+                // Scryfall lookup failure is non-fatal - we still show Gemini results
+                print("[ScannerView] Scryfall lookup failed: \(error.localizedDescription)")
+                // Don't set detectionError - we have valid Gemini results
+            }
         } catch {
             // Don't show error if cancelled
             guard !Task.isCancelled else { return }
