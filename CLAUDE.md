@@ -13,7 +13,7 @@ Mirari is an iOS app for Magic: The Gathering card recognition and collection ma
 - **UI**: SwiftUI
 - **Data**: SwiftData
 - **Camera**: AVFoundation
-- **AI**: Gemini 3 Flash (frame-by-frame) + Gemini 2.5 Flash Live API (streaming)
+- **AI**: Gemini 3 Flash Preview (frame-by-frame) + Gemini 2.5 Flash Live API (streaming)
 - **Cards**: Scryfall API
 - **Min iOS**: 17.0 (required for SwiftData)
 
@@ -70,18 +70,21 @@ Mirari/
 3. **Confidence scoring**: AI returns confidence level, we can require minimum threshold
 4. **Offline-first collection**: SwiftData stores full card data, not just references
 
-## API Keys
+## Firebase Setup
 
-Store Gemini API key in `Mirari/Utilities/APIKeys.swift` (gitignored):
-```swift
-enum APIKeys {
-    static let gemini = "your-key-here"
-}
-```
+This app uses Firebase AI Logic for Gemini API access. Firebase must be configured:
+
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable **AI Logic** and select **Gemini Developer API**
+3. Register iOS app with bundle ID `com.mirari.app`
+4. Download `GoogleService-Info.plist` and place in `Mirari/` folder
+5. Run `xcodegen generate` to include it in the project
+
+The `GoogleService-Info.plist` file is gitignored for security.
 
 ## Dependencies
 
-- **Firebase iOS SDK** (v12.5+) - FirebaseAILogic for Gemini API
+- **Firebase iOS SDK** (v12.5+) - FirebaseCore + FirebaseAILogic
 
 ## Testing on Device
 
@@ -97,7 +100,7 @@ Camera features require a physical iPhone. Simulator won't work for scanning.
 ## Implementation Roadmap
 
 - [x] **Phase 1**: Project setup & camera preview
-- [ ] **Phase 2**: Gemini Frame-by-Frame detection (Gemini 3 Flash)
+- [x] **Phase 2**: Gemini Frame-by-Frame detection (gemini-3-flash-preview)
 - [ ] **Phase 3**: Scryfall API integration
 - [ ] **Phase 4**: Collection management with SwiftData
 - [ ] **Phase 5**: Gemini Live API streaming (Gemini 2.5 Flash)
@@ -161,12 +164,19 @@ Return as JSON: {"name": "", "set_code": "", "set_name": "", "collector_number":
 
 **Goal**: Add real-time streaming detection as alternative mode
 
+**Pre-requisite Refactor**: Before implementing Live API, refactor GeminiService to use protocol-based architecture:
+1. Create `CardDetectionService` protocol with `func detectCard(from image: UIImage) async throws -> DetectionResult`
+2. Rename current `GeminiService` to `GeminiFrameService` implementing the protocol
+3. Update `ScannerView` to depend on `any CardDetectionService` instead of concrete class
+4. This enables swapping between Frame and Live implementations seamlessly
+
 **Live API Notes**:
 - Uses `gemini-2.5-flash-preview` (Live API doesn't support 3 Flash yet)
 - WebSocket endpoint: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`
 - Send frames as base64-encoded JPEG at ~1 FPS
 
 **Files to create**:
+- `Mirari/Services/Gemini/CardDetectionService.swift` (protocol)
 - `Mirari/Services/Gemini/GeminiLiveService.swift`
 
 ---

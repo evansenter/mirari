@@ -26,6 +26,8 @@ targets:
           - "**/.DS_Store"
     dependencies:
       - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
         product: FirebaseAILogic
     settings:
       base:

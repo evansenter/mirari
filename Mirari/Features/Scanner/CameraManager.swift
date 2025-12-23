@@ -119,8 +119,9 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
             image = uiImage
             captureError = nil
         } else {
+            print("[CameraManager] Failed to extract image data from captured photo")
             image = nil
-            captureError = nil
+            captureError = .captureError("Failed to extract image data from photo")
         }
 
         Task { @MainActor [weak self] in

@@ -23,6 +23,7 @@ Podfile.lock
 
 # Secrets
 Mirari/Utilities/APIKeys.swift
+Mirari/GoogleService-Info.plist
 
 # macOS
 .DS_Store

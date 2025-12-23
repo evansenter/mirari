@@ -3,31 +3,38 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0671545ECAADC29ED2B9B908 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AB4D2D0FDE363D1940E9BAC /* CameraManager.swift */; };
+		0FD26285286651CBF7F99AB5 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = B6F84BC33C92D8E72E4E18D0 /* FirebaseAILogic */; };
 		190E721C0A251B555BF861BF /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5254797CFD7E63057684C4F7 /* Card.swift */; };
+		22F916FD598B763D78995421 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5BAFFD338734731DC0CC1C41 /* GoogleService-Info.plist */; };
 		5AA7C0F5EE24CE8642304D0E /* CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63C1A278E19CD935B09DEA3A /* CollectionView.swift */; };
 		68176960A0F587C08B05031F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0708B63F8E04335D15C17780 /* Assets.xcassets */; };
 		7A3344A23D1D7F20974F1211 /* APIKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F05D27279B45E28E7ED2C0C /* APIKeys.swift */; };
 		7FF2F5B1AD5C406376C3DE74 /* DetectedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4779CDCA24A7989390E87B9 /* DetectedCardView.swift */; };
-		91289300AA46F867B86565E3 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = B6F84BC33C92D8E72E4E18D0 /* FirebaseAILogic */; };
+		91289300AA46F867B86565E3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D804A1F7D6EFEB075F0C2E08 /* FirebaseCore */; };
+		9D0C124822F7BA82248400A6 /* GeminiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 690BB9668BC6B5722DAB56ED /* GeminiService.swift */; };
 		B3D45ACB6362612C776EA882 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA750FC5EB9E579DCC26EE3 /* ScannerView.swift */; };
 		EBAA6787E4B4C2A22752EF31 /* MirariApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB055BACA879523534E6707 /* MirariApp.swift */; };
 		F38B87408D594EA118FC0027 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB702AEDA063CBBFACAE5CD /* ContentView.swift */; };
+		F9E06F723BB3DE6A56AEF688 /* DetectionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 547356902BA7D924781B5E60 /* DetectionResult.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0708B63F8E04335D15C17780 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1CB055BACA879523534E6707 /* MirariApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirariApp.swift; sourceTree = "<group>"; };
-		2E7BA7A97A8A4B7653A8EA04 /* Mirari.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mirari.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E7BA7A97A8A4B7653A8EA04 /* Mirari.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Mirari.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AB4D2D0FDE363D1940E9BAC /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		4F05D27279B45E28E7ED2C0C /* APIKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeys.swift; sourceTree = "<group>"; };
 		5254797CFD7E63057684C4F7 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
+		547356902BA7D924781B5E60 /* DetectionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionResult.swift; sourceTree = "<group>"; };
+		5BAFFD338734731DC0CC1C41 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5BB702AEDA063CBBFACAE5CD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		63C1A278E19CD935B09DEA3A /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
+		690BB9668BC6B5722DAB56ED /* GeminiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiService.swift; sourceTree = "<group>"; };
 		BDA750FC5EB9E579DCC26EE3 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		EA60869947BFB64323148CAE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F4779CDCA24A7989390E87B9 /* DetectedCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectedCardView.swift; sourceTree = "<group>"; };
@@ -38,7 +45,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				91289300AA46F867B86565E3 /* FirebaseAILogic in Frameworks */,
+				91289300AA46F867B86565E3 /* FirebaseCore in Frameworks */,
+				0FD26285286651CBF7F99AB5 /* FirebaseAILogic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				5254797CFD7E63057684C4F7 /* Card.swift */,
+				547356902BA7D924781B5E60 /* DetectionResult.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -81,6 +90,7 @@
 		5D2924C7835569F580688C0E /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				88A19ECD791C068DAF6EA308 /* Gemini */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -88,6 +98,7 @@
 		7B094ABB2D3B933F99BE7A44 /* Mirari */ = {
 			isa = PBXGroup;
 			children = (
+				5BAFFD338734731DC0CC1C41 /* GoogleService-Info.plist */,
 				EA60869947BFB64323148CAE /* Info.plist */,
 				7C95194009683B637FF75C6F /* App */,
 				0CAF1166B214C7072B43A240 /* Features */,
@@ -114,6 +125,14 @@
 				0708B63F8E04335D15C17780 /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		88A19ECD791C068DAF6EA308 /* Gemini */ = {
+			isa = PBXGroup;
+			children = (
+				690BB9668BC6B5722DAB56ED /* GeminiService.swift */,
+			);
+			path = Gemini;
 			sourceTree = "<group>";
 		};
 		A7A684E0825BD34F3C7AEC81 /* Scanner */ = {
@@ -159,6 +178,7 @@
 			);
 			name = Mirari;
 			packageProductDependencies = (
+				D804A1F7D6EFEB075F0C2E08 /* FirebaseCore */,
 				B6F84BC33C92D8E72E4E18D0 /* FirebaseAILogic */,
 			);
 			productName = Mirari;
@@ -172,7 +192,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					3D5CFAFFE273E1BD91823752 = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = 3C7BFE0CB770A12797848C48 /* Build configuration list for PBXProject "Mirari" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -187,6 +212,7 @@
 			packageReferences = (
 				E1C444989B8A69CCBC97D540 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -201,6 +227,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				68176960A0F587C08B05031F /* Assets.xcassets in Resources */,
+				22F916FD598B763D78995421 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,6 +244,8 @@
 				5AA7C0F5EE24CE8642304D0E /* CollectionView.swift in Sources */,
 				F38B87408D594EA118FC0027 /* ContentView.swift in Sources */,
 				7FF2F5B1AD5C406376C3DE74 /* DetectedCardView.swift in Sources */,
+				F9E06F723BB3DE6A56AEF688 /* DetectionResult.swift in Sources */,
+				9D0C124822F7BA82248400A6 /* GeminiService.swift in Sources */,
 				EBAA6787E4B4C2A22752EF31 /* MirariApp.swift in Sources */,
 				B3D45ACB6362612C776EA882 /* ScannerView.swift in Sources */,
 			);
@@ -248,7 +277,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -280,10 +308,9 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = QQ8T4Y747J;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -304,7 +331,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -334,7 +360,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -366,10 +391,9 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = QQ8T4Y747J;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -383,7 +407,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -429,6 +452,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E1C444989B8A69CCBC97D540 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAILogic;
+		};
+		D804A1F7D6EFEB075F0C2E08 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E1C444989B8A69CCBC97D540 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
