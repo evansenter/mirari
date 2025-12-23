@@ -25,11 +25,15 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Get weekly cache key
+        id: week
+        run: echo "week=$(date +%Y-%U)" >> $GITHUB_OUTPUT
+
       - name: Cache XcodeGen
         uses: actions/cache@v4
         with:
           path: /usr/local/bin/xcodegen
-          key: xcodegen-${{ runner.os }}
+          key: xcodegen-${{ runner.os }}-${{ steps.week.outputs.week }}
 
       - name: Install XcodeGen
         run: which xcodegen || brew install xcodegen
@@ -40,8 +44,9 @@ jobs:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
             .build
-          key: spm-${{ runner.os }}-${{ hashFiles('project.yml') }}
+          key: spm-${{ runner.os }}-${{ steps.week.outputs.week }}-${{ hashFiles('project.yml') }}
           restore-keys: |
+            spm-${{ runner.os }}-${{ steps.week.outputs.week }}-
             spm-${{ runner.os }}-
 
       - name: Generate Xcode Project
