@@ -49,11 +49,9 @@ jobs:
             spm-${{ runner.os }}-${{ steps.week.outputs.week }}-
             spm-${{ runner.os }}-
 
-      - name: Generate Xcode Project
-        run: xcodegen generate
-
-      - name: Create APIKeys.swift
+      - name: Create CI placeholder files
         run: |
+          # Create APIKeys.swift (gitignored)
           mkdir -p Mirari/Utilities
           cat > Mirari/Utilities/APIKeys.swift << 'EOF'
           enum APIKeys {
@@ -61,8 +59,7 @@ jobs:
           }
           EOF
 
-      - name: Create dummy GoogleService-Info.plist
-        run: |
+          # Create GoogleService-Info.plist (gitignored) with minimal valid config
           cat > Mirari/GoogleService-Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -95,6 +92,9 @@ jobs:
           </dict>
           </plist>
           EOF
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
 
       - name: Build and Test
         run: |
