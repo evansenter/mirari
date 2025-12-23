@@ -588,4 +588,107 @@ final class ScryfallServiceTests: XCTestCase {
             "Failed to parse Scryfall response: invalid json"
         )
     }
+
+    // MARK: - Additional Coverage Tests
+
+    func testLookupFromDetection_allStrategiesFail_throwsNotFound() async throws {
+        // Test that when all four lookup strategies fail, we get notFound error
+        MockURLProtocol.requestHandler = { request in
+            // Return 404 for all requests
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 404,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            let errorJSON = """
+            {"object": "error", "code": "not_found", "status": 404, "details": "Not found"}
+            """.data(using: .utf8)!
+            return (response, errorJSON)
+        }
+
+        let detection = DetectionResult(
+            name: "NonexistentCard",
+            setCode: "xxx",
+            setName: nil,
+            collectorNumber: "999",
+            confidence: 0.5,
+            features: []
+        )
+
+        do {
+            _ = try await service.lookupFromDetection(detection)
+            XCTFail("Expected notFound error")
+        } catch let error as ScryfallError {
+            XCTAssertEqual(error, .notFound)
+        }
+    }
+
+    func testLookupFromDetection_networkErrorStopsFallback() async throws {
+        // Test that network errors propagate immediately without trying fallback strategies
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { _ in
+            requestCount += 1
+            // Simulate network failure on first request
+            throw URLError(.notConnectedToInternet)
+        }
+
+        let detection = DetectionResult(
+            name: "Lightning Bolt",
+            setCode: "lea",
+            setName: nil,
+            collectorNumber: "161",
+            confidence: 0.9,
+            features: []
+        )
+
+        do {
+            _ = try await service.lookupFromDetection(detection)
+            XCTFail("Expected network error")
+        } catch let error as ScryfallError {
+            if case .networkError = error {
+                // Expected
+            } else {
+                XCTFail("Expected networkError, got \(error)")
+            }
+        }
+
+        // Should have stopped after first request
+        XCTAssertEqual(requestCount, 1, "Should not attempt fallback strategies on network error")
+    }
+
+    func testLookupCard_malformedResponse_throwsDecodingError() async throws {
+        // Test that malformed JSON responses result in decodingError
+        mockResponse(json: "{\"invalid\": \"json\"}", statusCode: 200)
+
+        do {
+            _ = try await service.lookupCard(setCode: "lea", collectorNumber: "161")
+            XCTFail("Expected decodingError")
+        } catch let error as ScryfallError {
+            if case .decodingError = error {
+                // Expected
+            } else {
+                XCTFail("Expected decodingError, got \(error)")
+            }
+        }
+    }
+
+    func testLookupCard_serverError_throwsApiError() async throws {
+        // Test that 5xx server errors result in apiError
+        let errorJSON = """
+        {"object": "error", "code": "server_error", "status": 500, "details": "Internal server error"}
+        """
+        mockResponse(json: errorJSON, statusCode: 500)
+
+        do {
+            _ = try await service.lookupCard(setCode: "lea", collectorNumber: "161")
+            XCTFail("Expected apiError")
+        } catch let error as ScryfallError {
+            if case .apiError(let message) = error {
+                XCTAssertTrue(message.contains("Internal server error"))
+            } else {
+                XCTFail("Expected apiError, got \(error)")
+            }
+        }
+    }
 }

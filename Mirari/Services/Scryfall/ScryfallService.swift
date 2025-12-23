@@ -71,13 +71,17 @@ final class ScryfallService: ScryfallServiceProtocol {
 
     // MARK: - Rate Limiting
 
-    /// Wait if needed to respect Scryfall's rate limit
-    private func throttleIfNeeded() async {
+    /// Wait if needed to respect Scryfall's rate limit.
+    /// Respects task cancellation - throws CancellationError if cancelled during wait.
+    private func throttleIfNeeded() async throws {
         if let lastTime = lastRequestTime {
             let elapsed = Date().timeIntervalSince(lastTime)
             if elapsed < minimumRequestInterval {
                 let waitTime = minimumRequestInterval - elapsed
-                try? await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
+                // Update time before sleep to prevent concurrent calls from both sleeping
+                lastRequestTime = Date()
+                try await Task.sleep(nanoseconds: UInt64(waitTime * 1_000_000_000))
+                return
             }
         }
         lastRequestTime = Date()
@@ -105,8 +109,9 @@ final class ScryfallService: ScryfallServiceProtocol {
 
     // MARK: - Fallback: Search by Name
 
-    /// Search for a card by name
-    /// Returns the first result (usually the most recent printing)
+    /// Search for a card by exact name match.
+    /// Returns the card Scryfall considers the best default printing for this name.
+    /// For a specific printing, use `lookupCard(setCode:collectorNumber:)` instead.
     func searchByName(_ name: String) async throws -> ScryfallCard {
         // Use exact match first, fall back to fuzzy
         let encodedName = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
@@ -151,10 +156,13 @@ final class ScryfallService: ScryfallServiceProtocol {
 
     // MARK: - Smart Lookup (Detection Result -> Card)
 
-    /// Look up a card using detection result, with fallback strategies
+    /// Look up a card using detection result, with fallback strategies:
     /// 1. Try set code + collector number (most accurate)
     /// 2. Try name + set code search
-    /// 3. Fall back to fuzzy name search
+    /// 3. Try exact name match
+    /// 4. Fall back to fuzzy name search (last resort)
+    ///
+    /// Network errors and rate limiting propagate immediately; only `notFound` errors trigger fallback.
     func lookupFromDetection(_ detection: DetectionResult) async throws -> ScryfallCard {
         // Strategy 1: Exact lookup by set code and collector number
         if let setCode = detection.setCode, !setCode.isEmpty,
@@ -210,7 +218,7 @@ final class ScryfallService: ScryfallServiceProtocol {
     // MARK: - Private Helpers
 
     private func fetchCard(from url: URL) async throws -> ScryfallCard {
-        await throttleIfNeeded()
+        try await throttleIfNeeded()
         print("[ScryfallService] Fetching: \(url)")
 
         do {
@@ -243,7 +251,7 @@ final class ScryfallService: ScryfallServiceProtocol {
     }
 
     private func fetchSearchResults(from url: URL) async throws -> ScryfallSearchResponse {
-        await throttleIfNeeded()
+        try await throttleIfNeeded()
         print("[ScryfallService] Searching: \(url)")
 
         do {

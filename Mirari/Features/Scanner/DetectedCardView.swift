@@ -78,8 +78,9 @@ struct DetectedCardView: View {
                         .frame(maxHeight: 350)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(radius: 8)
-                case .failure:
+                case .failure(let error):
                     // Fall back to captured image on failure
+                    let _ = print("[DetectedCardView] Failed to load Scryfall image: \(error.localizedDescription)")
                     capturedImageView
                 @unknown default:
                     capturedImageView
@@ -197,12 +198,20 @@ struct DetectedCardView: View {
                 condition: condition
             )
         } else {
+            // This should not happen if canSaveToCollection is working correctly
+            print("[DetectedCardView] ERROR: saveToCollection called but both scryfallCard and detectionResult are nil")
             return
         }
 
         modelContext.insert(card)
-        print("[DetectedCardView] Saved card: \(card.name) to collection")
-        showingSaveConfirmation = true
+        do {
+            try modelContext.save()
+            print("[DetectedCardView] Saved card: \(card.name) to collection")
+            showingSaveConfirmation = true
+        } catch {
+            print("[DetectedCardView] Failed to save card: \(error.localizedDescription)")
+            // Card was inserted but save failed - it may still be saved on next autosave
+        }
     }
 }
 
@@ -566,7 +575,7 @@ private struct ScryfallUnavailableCard: View {
                 return "Card not found on Scryfall. This may be a new or special printing."
             case .rateLimited:
                 return "Too many requests. Please try again in a moment."
-            default:
+            case .invalidURL, .apiError, .decodingError:
                 return "Could not fetch full card details from Scryfall."
             }
         }

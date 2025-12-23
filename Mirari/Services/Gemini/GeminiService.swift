@@ -88,7 +88,8 @@ final class GeminiService {
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Check if it's an array (which we don't support) before extracting
+        // Gemini is instructed to return a single JSON object per card.
+        // If it returns an array, it likely detected multiple cards or misunderstood the prompt.
         if cleaned.hasPrefix("[") {
             print("[GeminiService] JSON root is an array, expected object")
             throw GeminiError.parsingFailed("Expected JSON object at root, not array")
