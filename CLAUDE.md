@@ -40,35 +40,28 @@ Mirari/
 │   ├── Scanner/
 │   │   ├── ScannerView.swift        # Camera UI with card detection
 │   │   ├── CameraManager.swift      # AVFoundation camera handling
-│   │   ├── CardDetectionService.swift # Orchestrates AI + Scryfall
-│   │   └── DetectedCardView.swift   # Shows detected card details
-│   ├── Collection/
-│   │   ├── CollectionView.swift     # Grid of collected cards
-│   │   ├── CardDetailView.swift     # Single card view
-│   │   └── ImportExportView.swift   # CSV handling
-│   └── Similar/
-│       └── SimilarCardsView.swift   # AI-powered similar cards (future)
+│   │   └── DetectedCardView.swift   # Shows detected card, Scryfall data, save to collection
+│   └── Collection/
+│       └── CollectionView.swift     # Grid of collected cards
 ├── Services/
 │   ├── Gemini/
-│   │   ├── GeminiService.swift      # Protocol for AI detection
-│   │   ├── GeminiFrameService.swift # Frame-by-frame with 3 Flash
-│   │   └── GeminiLiveService.swift  # WebSocket streaming with 2.5 Flash
+│   │   └── GeminiService.swift      # Gemini 3 Flash frame-by-frame detection
 │   └── Scryfall/
-│       ├── ScryfallService.swift    # API client
-│       └── ScryfallModels.swift     # Card, Set DTOs
+│       ├── ScryfallService.swift    # API client with rate limiting & fallback
+│       └── ScryfallModels.swift     # Card, Set, Prices DTOs
 ├── Models/
 │   ├── Card.swift                   # SwiftData model for collection
-│   └── ScanResult.swift             # Detection result type
+│   └── DetectionResult.swift        # AI detection result type
 └── Utilities/
     └── APIKeys.swift                # Secure key storage (gitignored)
 ```
 
 ### Key Design Decisions
 
-1. **Protocol-based AI service**: `GeminiService` protocol allows swapping between frame-by-frame and streaming implementations
-2. **Scryfall as source of truth**: AI identifies cards, Scryfall provides authoritative data
-3. **Confidence scoring**: AI returns confidence level, we can require minimum threshold
-4. **Offline-first collection**: SwiftData stores full card data, not just references
+1. **Scryfall as source of truth**: AI identifies cards, Scryfall provides authoritative data (prices, images, oracle text)
+2. **Fallback lookup strategy**: Set+number → name+set → exact name → fuzzy name
+3. **Confidence scoring**: AI returns confidence level (0.0-1.0) for detection quality
+4. **Offline-first collection**: SwiftData stores full card data, not just Scryfall IDs
 
 ## Firebase Setup
 
@@ -102,86 +95,27 @@ Camera features require a physical iPhone. Simulator won't work for scanning.
 - [x] **Phase 1**: Project setup & camera preview
 - [x] **Phase 2**: Gemini Frame-by-Frame detection (gemini-3-flash-preview)
 - [x] **Phase 3**: Scryfall API integration
-- [ ] **Phase 4**: Collection management with SwiftData
-- [ ] **Phase 5**: Gemini Live API streaming (Gemini 2.5 Flash)
-- [ ] **Phase 6**: CSV import/export
-
----
-
-## Phase 2: Gemini Frame-by-Frame Detection
-
-**Goal**: Tap to capture a frame, send to Gemini 3 Flash, get card identification
-
-**Gemini Prompt Strategy**:
-```
-You are a Magic: The Gathering card identifier. Analyze this image and identify:
-1. Card name
-2. Set name and code (e.g., "Dominaria United" / "dmu")
-3. Collector number
-4. Any distinguishing features (foil, promo, art variant)
-
-Focus on the card art, frame style, and set symbol to determine the exact printing.
-Return as JSON: {"name": "", "set_code": "", "set_name": "", "collector_number": "", "confidence": 0.0-1.0}
-```
-
-**Files to create**:
-- `Mirari/Services/Gemini/GeminiService.swift` (protocol)
-- `Mirari/Services/Gemini/GeminiFrameService.swift`
-
----
-
-## Phase 3: Scryfall Integration
-
-**Goal**: Look up identified cards on Scryfall, display full card data
-
-**Key Scryfall Endpoints**:
-- `GET /cards/:set/:number` - Primary lookup by set code + collector number
-- `GET /cards/search?q=name:X` - Fallback search by name
-- `GET /cards/collection` - Bulk lookup
-
-**Files to create**:
-- `Mirari/Services/Scryfall/ScryfallService.swift`
-- `Mirari/Services/Scryfall/ScryfallModels.swift`
+- [ ] **Phase 4**: Collection management (CardDetailView)
+- [ ] **Phase 5**: CSV import/export
+- [ ] **Phase 6**: Gemini Live API streaming (Gemini 2.5 Flash)
 
 ---
 
 ## Phase 4: Collection Management
 
-**Goal**: Save cards to collection, view collection, basic management
+**Goal**: View and edit saved cards in collection
 
-**Card Model Fields** (already exists in Card.swift):
-- scryfallId, name, setCode, setName, collectorNumber
-- imageUrl, oracleText, manaCost, typeLine, rarity
-- quantity, condition, isFoil, dateAdded
-- pricesJson
+**Already implemented**:
+- `Card.swift` - SwiftData model with all fields
+- `CollectionView.swift` - Grid display of saved cards
+- `DetectedCardView.swift` - Save to collection functionality
 
-**Files to create**:
-- `Mirari/Features/Collection/CardDetailView.swift`
-
----
-
-## Phase 5: Gemini Live API (Streaming)
-
-**Goal**: Add real-time streaming detection as alternative mode
-
-**Pre-requisite Refactor**: Before implementing Live API, refactor GeminiService to use protocol-based architecture:
-1. Create `CardDetectionService` protocol with `func detectCard(from image: UIImage) async throws -> DetectionResult`
-2. Rename current `GeminiService` to `GeminiFrameService` implementing the protocol
-3. Update `ScannerView` to depend on `any CardDetectionService` instead of concrete class
-4. This enables swapping between Frame and Live implementations seamlessly
-
-**Live API Notes**:
-- Uses `gemini-2.5-flash-preview` (Live API doesn't support 3 Flash yet)
-- WebSocket endpoint: `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`
-- Send frames as base64-encoded JPEG at ~1 FPS
-
-**Files to create**:
-- `Mirari/Services/Gemini/CardDetectionService.swift` (protocol)
-- `Mirari/Services/Gemini/GeminiLiveService.swift`
+**Remaining work**:
+- `CardDetailView.swift` - View/edit individual cards (quantity, condition, delete)
 
 ---
 
-## Phase 6: CSV Import/Export
+## Phase 5: CSV Import/Export
 
 **Goal**: Export collection to CSV, import from other apps (Deckbox, Moxfield, etc.)
 
@@ -192,8 +126,29 @@ name,set_code,collector_number,quantity,condition,foil
 ```
 
 **Files to create**:
-- `Mirari/Features/Collection/ImportExportView.swift`
 - `Mirari/Services/CSVService.swift`
+- Wire up Import/Export buttons in `CollectionView.swift`
+
+---
+
+## Phase 6: Gemini Live API (Streaming)
+
+**Goal**: Add real-time streaming detection as alternative scanning mode
+
+**Pre-requisite Refactor**: Extract protocol from GeminiService:
+1. Create `CardDetectionProtocol` with `func detectCard(from image: UIImage) async throws -> DetectionResult`
+2. Have `GeminiService` conform to it
+3. Create `GeminiLiveService` implementing WebSocket streaming
+4. Add mode toggle in `ScannerView`
+
+**Live API Notes**:
+- Uses `gemini-2.5-flash-preview`
+- WebSocket connection for bidirectional streaming
+- Send frames as base64-encoded JPEG at ~1 FPS
+
+**Files to create**:
+- `Mirari/Services/Gemini/CardDetectionProtocol.swift`
+- `Mirari/Services/Gemini/GeminiLiveService.swift`
 
 ---
 

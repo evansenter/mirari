@@ -78,9 +78,8 @@ struct DetectedCardView: View {
                         .frame(maxHeight: 350)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(radius: 8)
-                case .failure(let error):
+                case .failure:
                     // Fall back to captured image on failure
-                    let _ = print("[DetectedCardView] Failed to load Scryfall image: \(error.localizedDescription)")
                     capturedImageView
                 @unknown default:
                     capturedImageView
