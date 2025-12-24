@@ -16,52 +16,60 @@ Mirari is an iOS app for Magic: The Gathering card recognition and collection ma
 - **AI**: Gemini 3 Flash Preview (frame-by-frame) + Gemini 2.5 Flash Live API (streaming)
 - **Cards**: Scryfall API
 - **Min iOS**: 17.0 (required for SwiftData)
+- **Swift**: 6.0
 
 ## Build Commands
 
-**Generate/regenerate Xcode project:**
 ```bash
+# Generate/regenerate Xcode project (run after any project.yml changes)
 xcodegen generate
+
+# Open in Xcode
+open Mirari.xcodeproj
+
+# Lint code
+swiftlint
+
+# Run tests (from command line)
+xcodebuild test \
+  -project Mirari.xcodeproj \
+  -scheme Mirari \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  CODE_SIGNING_ALLOWED=NO
+
+# Build only (no tests)
+xcodebuild build \
+  -project Mirari.xcodeproj \
+  -scheme Mirari \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  CODE_SIGNING_ALLOWED=NO
 ```
 
-**Open in Xcode:**
-```bash
-open Mirari.xcodeproj
-```
+## CI Pipeline
+
+GitHub Actions runs on PRs and pushes to main:
+- **SwiftLint**: Code style checking
+- **Build & Test**: Compiles and runs unit tests on iOS Simulator
 
 ## Architecture
 
-```
-Mirari/
-├── App/
-│   ├── MirariApp.swift              # App entry point
-│   └── ContentView.swift            # Tab-based navigation
-├── Features/
-│   ├── Scanner/
-│   │   ├── ScannerView.swift        # Camera UI with card detection
-│   │   ├── CameraManager.swift      # AVFoundation camera handling
-│   │   └── DetectedCardView.swift   # Shows detected card, Scryfall data, save to collection
-│   └── Collection/
-│       └── CollectionView.swift     # Grid of collected cards
-├── Services/
-│   ├── Gemini/
-│   │   └── GeminiService.swift      # Gemini 3 Flash frame-by-frame detection
-│   └── Scryfall/
-│       ├── ScryfallService.swift    # API client with rate limiting & fallback
-│       └── ScryfallModels.swift     # Card, Set, Prices DTOs
-├── Models/
-│   ├── Card.swift                   # SwiftData model for collection
-│   └── DetectionResult.swift        # AI detection result type
-└── Utilities/
-    └── APIKeys.swift                # Secure key storage (gitignored)
-```
+### Key Components
+
+- `Features/Scanner/` - Camera UI, card detection, and detected card display
+- `Features/Collection/` - Collection grid view
+- `Services/Gemini/GeminiService.swift` - Gemini AI card detection (frame-by-frame)
+- `Services/Scryfall/` - Scryfall API client with rate limiting and 4-strategy fallback lookup
 
 ### Key Design Decisions
 
 1. **Scryfall as source of truth**: AI identifies cards, Scryfall provides authoritative data (prices, images, oracle text)
-2. **Fallback lookup strategy**: Set+number → name+set → exact name → fuzzy name
+2. **Fallback lookup strategy**: Set+number → name+set → exact name → fuzzy name (see `ScryfallService.lookupFromDetection`)
 3. **Confidence scoring**: AI returns confidence level (0.0-1.0) for detection quality
 4. **Offline-first collection**: SwiftData stores full card data, not just Scryfall IDs
+
+### Testing
+
+Tests use `MockURLProtocol` to mock network responses without hitting real APIs. See `MirariTests/ScryfallServiceTests.swift` for examples of mocking Scryfall responses.
 
 ## Firebase Setup
 
@@ -74,10 +82,6 @@ This app uses Firebase AI Logic for Gemini API access. Firebase must be configur
 5. Run `xcodegen generate` to include it in the project
 
 The `GoogleService-Info.plist` file is gitignored for security.
-
-## Dependencies
-
-- **Firebase iOS SDK** (v12.5+) - FirebaseCore + FirebaseAILogic
 
 ## Testing on Device
 
